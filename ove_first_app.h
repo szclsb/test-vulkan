@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ove_window.h"
+#include "ove_pipeline.h"
 
 namespace ove {
     class FirstApp {
@@ -12,5 +13,6 @@ namespace ove {
 
     private:
         OveWindow window{WIDTH, HEIGHT, "Hello Vulkan"};
+        OvePipeline pipeline{"../shaders/simple_shader.vert.spv", "../shaders/simple_shader.frag.spv"};
     };
 }
