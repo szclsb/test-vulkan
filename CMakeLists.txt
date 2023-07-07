@@ -15,7 +15,12 @@ if (NOT Vulkan_FOUND)
     message(FATAL_ERROR "Could not find vulkan lib")
 endif()
 
-add_executable(test_vulkan main.cpp)
+add_executable(test_vulkan
+        ove_window.h
+        ove_window.cpp
+        ove_first_app.h
+        ove_first_app.cpp
+        main.cpp)
 target_include_directories(test_vulkan PUBLIC ${Vulkan_INCLUDE_DIRS} GLFW/include GLM)
 target_link_directories(test_vulkan PUBLIC GLFW/src)
 target_link_libraries(test_vulkan ${Vulkan_LIBRARIES} glfw)
