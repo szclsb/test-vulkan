@@ -2,7 +2,7 @@
 
 namespace ove {
     void FirstApp::run() {
-        while(!window.shouldClose()) {
+        while(!oveWindow.shouldClose()) {
             glfwPollEvents();
         }
     }

@@ -2,6 +2,7 @@
 
 #include "ove_window.h"
 #include "ove_pipeline.h"
+#include "ove_device.h"
 
 namespace ove {
     class FirstApp {
@@ -12,7 +13,13 @@ namespace ove {
         void run();
 
     private:
-        OveWindow window{WIDTH, HEIGHT, "Hello Vulkan"};
-        OvePipeline pipeline{"../shaders/simple_shader.vert.spv", "../shaders/simple_shader.frag.spv"};
+        OveWindow oveWindow{WIDTH, HEIGHT, "Hello Vulkan"};
+        OveDevice oveDevice{oveWindow};
+        OvePipeline ovePipeline{
+            oveDevice,
+            "../shaders/simple_shader.vert.spv",
+            "../shaders/simple_shader.frag.spv",
+            OvePipeline::defaultConfigInfo(WIDTH, HEIGHT)
+            };
     };
 }
