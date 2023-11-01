@@ -35,7 +35,7 @@ class OveDevice {
 
   // Not copyable or movable
   OveDevice(const OveDevice &) = delete;
-  void operator=(const OveDevice &) = delete;
+  OveDevice &operator=(const OveDevice &) = delete;
   OveDevice(OveDevice &&) = delete;
   OveDevice &operator=(OveDevice &&) = delete;
 
