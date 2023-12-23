@@ -32,6 +32,8 @@ namespace ove {
         OvePipeline(const OvePipeline &) = delete;
         OvePipeline &operator=(const OvePipeline &) = delete;
 
+        void bind(VkCommandBuffer commandBuffer);
+
         static PipelineConfigInfo defaultConfigInfo(uint32_t width, uint32_t height);
 
     private:

@@ -139,6 +139,10 @@ namespace ove {
         }
     }
 
+    void OvePipeline::bind(VkCommandBuffer commandBuffer) {
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+    }
+
     PipelineConfigInfo OvePipeline::defaultConfigInfo(uint32_t width, uint32_t height) {
         PipelineConfigInfo configInfo{};
 
