@@ -21,6 +21,7 @@ add_executable(test_vulkan
         ove_pipeline.cpp
         ove_swap_chain.cpp
         ove_device.cpp
+        ove_model.cpp
         main.cpp)
 target_include_directories(test_vulkan PUBLIC ${Vulkan_INCLUDE_DIRS} GLFW/include GLM)
 target_link_directories(test_vulkan PUBLIC GLFW/src)

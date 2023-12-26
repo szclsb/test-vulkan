@@ -5,6 +5,7 @@
 
 namespace ove {
     FirstApp::FirstApp() {
+        loadModels();
         createPipelineLayout();
         createPipeline();
         createCommandBuffers();
@@ -21,6 +22,16 @@ namespace ove {
         }
 
         vkDeviceWaitIdle(oveDevice.device());
+    }
+
+    void FirstApp::loadModels() {
+        std::vector<OveModel::Vertex> vertices {
+                {{0.0f, -0.5f}},
+                {{0.5f, 0.5f}},
+                {{-0.5f, 0.5f}}
+        };
+
+        oveModel = std::make_unique<OveModel>(oveDevice, vertices);
     }
 
     void FirstApp::createPipelineLayout() {
@@ -86,7 +97,8 @@ namespace ove {
             vkCmdBeginRenderPass(commandBuffers[i], &renderBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
             ovePipeline->bind(commandBuffers[i]);
-            vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
+            oveModel->bind(commandBuffers[i]);
+            oveModel->draw(commandBuffers[i]);
 
             vkCmdEndRenderPass(commandBuffers[i]);
             if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {

@@ -4,6 +4,7 @@
 #include "ove_pipeline.h"
 #include "ove_device.h"
 #include "ove_swap_chain.h"
+#include "ove_model.h"
 
 #include <memory>
 #include <vector>
@@ -23,6 +24,7 @@ namespace ove {
         void run();
 
     private:
+        void loadModels();
         void createPipelineLayout();
         void createPipeline();
         void createCommandBuffers();
@@ -34,5 +36,6 @@ namespace ove {
         std::unique_ptr<OvePipeline> ovePipeline;
         VkPipelineLayout pipelineLayout;
         std::vector<VkCommandBuffer> commandBuffers;
+        std::unique_ptr<OveModel> oveModel;
     };
 }
