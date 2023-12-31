@@ -9,8 +9,8 @@ set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
-add_subdirectory(GLFW)
-add_subdirectory(GLM)
+add_subdirectory(external/GLFW)
+add_subdirectory(external/GLM)
 
 find_package(Vulkan REQUIRED)
 if (NOT Vulkan_FOUND)
@@ -23,11 +23,11 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 target_include_directories(${PROJECT_NAME} PUBLIC
         ${PROJECT_SOURCE_DIR}/src
         ${Vulkan_INCLUDE_DIRS}
-        GLFW/include
-        GLM
+        external/GLFW/include
+        external/GLM
 )
 target_link_directories(${PROJECT_NAME} PUBLIC
-        GLFW/src
+        external/GLFW/src
 )
 target_link_libraries(${PROJECT_NAME}
         ${Vulkan_LIBRARIES}
