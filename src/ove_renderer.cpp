@@ -6,7 +6,8 @@
 namespace ove {
     OveRenderer::OveRenderer(OveWindow &window, OveDevice &device) : oveWindow{window},
                                                                      oveDevice{device},
-                                                                     isFrameStarted{false} {
+                                                                     isFrameStarted{false},
+                                                                     currentFrameIndex{0} {
         recreateSwapChain();
         createCommandBuffers();
     }
@@ -16,7 +17,7 @@ namespace ove {
     }
 
     void OveRenderer::createCommandBuffers() {
-        commandBuffers.resize(oveSwapChain->imageCount());
+        commandBuffers.resize(OveSwapChain::MAX_FRAMES_IN_FLIGHT);
 
         VkCommandBufferAllocateInfo allocateInfo{};
         allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -50,10 +51,10 @@ namespace ove {
         if (oveSwapChain == nullptr) {
             oveSwapChain = std::make_unique<OveSwapChain>(oveDevice, extent);
         } else {
-            oveSwapChain = std::make_unique<OveSwapChain>(oveDevice, extent, std::move(oveSwapChain));
-            if (oveSwapChain->imageCount() != commandBuffers.size()) {
-                freeCommandBuffers();
-                createCommandBuffers();
+            std::shared_ptr<OveSwapChain> oldSwapChain = std::move(oveSwapChain);
+            oveSwapChain = std::make_unique<OveSwapChain>(oveDevice, extent, oldSwapChain);
+            if (!oldSwapChain->compareSwapFormats(*oldSwapChain)) {
+                throw std::runtime_error("swap chain image (or depth) format has changed!");
             }
         }
         //fixme
@@ -99,7 +100,7 @@ namespace ove {
         }
 
         isFrameStarted = false;
-        currentImageIndex = (currentImageIndex + 1) % OveSwapChain::MAX_FRAMES_IN_FLIGHT;
+        currentFrameIndex = (currentFrameIndex + 1) % OveSwapChain::MAX_FRAMES_IN_FLIGHT;
     }
 
     void OveRenderer::beginSwapChainRenderPass(VkCommandBuffer commandBuffer) {

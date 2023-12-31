@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ove_window.h"
-#include "ove_pipeline.h"
 #include "ove_device.h"
 #include "ove_renderer.h"
 #include "ove_game_object.h"
@@ -25,16 +24,11 @@ namespace ove {
 
     private:
         void loadGameObjects();
-        void createPipelineLayout();
-        void createPipeline();
-        void renderGameObjects(VkCommandBuffer commandBuffer);
 
         OveWindow oveWindow{WIDTH, HEIGHT, "Hello Vulkan"};
         OveDevice oveDevice{oveWindow};
         OveRenderer oveRenderer{oveWindow, oveDevice};
 
-        std::unique_ptr<OvePipeline> ovePipeline;
-        VkPipelineLayout pipelineLayout;
         std::vector<OveGameObject> gameObjects;
     };
 }

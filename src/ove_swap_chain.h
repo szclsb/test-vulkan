@@ -17,13 +17,14 @@ namespace ove {
         static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
         OveSwapChain(OveDevice &deviceRef, VkExtent2D windowExtent);
-        OveSwapChain(OveDevice &deviceRef, VkExtent2D windowExtent, std::shared_ptr<OveSwapChain> previous);
 
-        ~OveSwapChain();
+        OveSwapChain(OveDevice &deviceRef, VkExtent2D windowExtent, std::shared_ptr<OveSwapChain> previous);
 
         OveSwapChain(const OveSwapChain &) = delete;
 
         OveSwapChain &operator=(const OveSwapChain &) = delete;
+
+        ~OveSwapChain();
 
         VkFramebuffer getFrameBuffer(int index) { return swapChainFramebuffers[index]; }
 
@@ -51,13 +52,24 @@ namespace ove {
 
         VkResult submitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex);
 
+        bool compareSwapFormats(const OveSwapChain &other) const {
+            return other.swapChainImageFormat == swapChainImageFormat
+                   && other.swapChainDepthFormat == swapChainDepthFormat;
+        }
+
     private:
         void init();
+
         void createSwapChain();
+
         void createImageViews();
+
         void createDepthResources();
+
         void createRenderPass();
+
         void createFramebuffers();
+
         void createSyncObjects();
 
         // Helper functions
@@ -70,6 +82,7 @@ namespace ove {
         VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
 
         VkFormat swapChainImageFormat;
+        VkFormat swapChainDepthFormat;
         VkExtent2D swapChainExtent;
 
         std::vector<VkFramebuffer> swapChainFramebuffers;

@@ -23,8 +23,13 @@ namespace ove {
         bool isFrameInProgress() const { return isFrameStarted; }
         VkCommandBuffer getCurrentCommandBuffer() const {
             assert(isFrameStarted && "Cannot get framebuffer when frame not in progress");
-            return commandBuffers[currentImageIndex];
+            return commandBuffers[currentFrameIndex];
         }
+        int getFrameIndex() const {
+            assert(isFrameStarted && "Cannot get frame index when frame not in progress");
+            return currentFrameIndex;
+        }
+
 
         VkCommandBuffer beginFrame();
         void endFrame();
@@ -42,6 +47,7 @@ namespace ove {
         std::vector<VkCommandBuffer> commandBuffers;
 
         uint32_t currentImageIndex;
+        int currentFrameIndex;
         bool isFrameStarted;
     };
 }
