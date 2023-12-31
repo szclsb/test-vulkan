@@ -28,11 +28,14 @@ namespace ove {
         void createPipelineLayout();
         void createPipeline();
         void createCommandBuffers();
+        void freeCommandBuffers();
         void drawFrame();
+        void recreateSwapChain();
+        void recordCommandBuffer(int imageIndex);
 
         OveWindow oveWindow{WIDTH, HEIGHT, "Hello Vulkan"};
         OveDevice oveDevice{oveWindow};
-        OveSwapChain oveSwapChain{oveDevice, oveWindow.getExtent()};
+        std::unique_ptr<OveSwapChain> oveSwapChain;
         std::unique_ptr<OvePipeline> ovePipeline;
         VkPipelineLayout pipelineLayout;
         std::vector<VkCommandBuffer> commandBuffers;

@@ -22,12 +22,16 @@ namespace ove {
         }
 
         void createWindowSurface(VkInstance instance, VkSurfaceKHR *surface);
+        bool wasResized() {return resized;}
+        void resetResizeFlag() {resized = false;}
 
     private:
+        static void resizeCallback(GLFWwindow *window, int width, int height);
         void initWindow();
 
-        const int width;
-        const int height;
+        int width;
+        int height;
+        bool resized = false;
 
         std::string windowName;
         GLFWwindow *window;
