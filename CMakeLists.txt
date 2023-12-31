@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.25)
-project(test_vulkan)
 
 set(CMAKE_CXX_STANDARD 23)
+set(NAME OveEngine)
+
+project(${NAME} VERSION 0.0.1)
 
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -15,14 +17,49 @@ if (NOT Vulkan_FOUND)
     message(FATAL_ERROR "Could not find vulkan lib")
 endif()
 
-add_executable(test_vulkan
-        ove_window.cpp
-        ove_first_app.cpp
-        ove_pipeline.cpp
-        ove_swap_chain.cpp
-        ove_device.cpp
-        ove_model.cpp
-        main.cpp)
-target_include_directories(test_vulkan PUBLIC ${Vulkan_INCLUDE_DIRS} GLFW/include GLM)
-target_link_directories(test_vulkan PUBLIC GLFW/src)
-target_link_libraries(test_vulkan ${Vulkan_LIBRARIES} glfw)
+file(GLOB_RECURSE SOURCES ${PROJECT_SOURCE_DIR}/src/*.cpp)
+add_executable(${PROJECT_NAME} ${SOURCES})
+
+target_include_directories(${PROJECT_NAME} PUBLIC
+        ${PROJECT_SOURCE_DIR}/src
+        ${Vulkan_INCLUDE_DIRS}
+        GLFW/include
+        GLM
+)
+target_link_directories(${PROJECT_NAME} PUBLIC
+        GLFW/src
+)
+target_link_libraries(${PROJECT_NAME}
+        ${Vulkan_LIBRARIES}
+        glfw
+)
+
+############## Build SHADERS #######################
+
+# Find all vertex and fragment sources within shaders directory
+# taken from VBlancos vulkan tutorial
+# https://github.com/vblanco20-1/vulkan-guide/blob/all-chapters/CMakeLists.txt
+find_program(GLSL_VALIDATOR glslangValidator HINTS
+        ${Vulkan_GLSLANG_VALIDATOR_EXECUTABLE}
+)
+
+# get all .vert and .frag files in shaders directory
+file(GLOB_RECURSE GLSL_SOURCE_FILES
+        "${PROJECT_SOURCE_DIR}/shaders/*.vert"
+        "${PROJECT_SOURCE_DIR}/shaders/*.frag"
+)
+
+foreach(GLSL ${GLSL_SOURCE_FILES})
+    get_filename_component(FILE_NAME ${GLSL} NAME)
+    set(SPIRV "${PROJECT_SOURCE_DIR}/shaders/${FILE_NAME}.spv")
+    add_custom_command(
+            OUTPUT ${SPIRV}
+            COMMAND ${GLSL_VALIDATOR} -V ${GLSL} -o ${SPIRV}
+            DEPENDS ${GLSL})
+    list(APPEND SPIRV_BINARY_FILES ${SPIRV})
+endforeach(GLSL)
+
+add_custom_target(
+        Shaders
+        DEPENDS ${SPIRV_BINARY_FILES}
+)
