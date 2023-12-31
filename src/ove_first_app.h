@@ -3,7 +3,7 @@
 #include "ove_window.h"
 #include "ove_pipeline.h"
 #include "ove_device.h"
-#include "ove_swap_chain.h"
+#include "ove_renderer.h"
 #include "ove_game_object.h"
 
 #include <memory>
@@ -27,19 +27,14 @@ namespace ove {
         void loadGameObjects();
         void createPipelineLayout();
         void createPipeline();
-        void createCommandBuffers();
-        void freeCommandBuffers();
-        void drawFrame();
-        void recreateSwapChain();
-        void recordCommandBuffer(int imageIndex);
         void renderGameObjects(VkCommandBuffer commandBuffer);
 
         OveWindow oveWindow{WIDTH, HEIGHT, "Hello Vulkan"};
         OveDevice oveDevice{oveWindow};
-        std::unique_ptr<OveSwapChain> oveSwapChain;
+        OveRenderer oveRenderer{oveWindow, oveDevice};
+
         std::unique_ptr<OvePipeline> ovePipeline;
         VkPipelineLayout pipelineLayout;
-        std::vector<VkCommandBuffer> commandBuffers;
         std::vector<OveGameObject> gameObjects;
     };
 }
