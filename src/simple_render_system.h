@@ -3,6 +3,7 @@
 #include "ove_pipeline.h"
 #include "ove_device.h"
 #include "ove_game_object.h"
+#include "ove_camera.h"
 
 #include <memory>
 #include <vector>
@@ -16,7 +17,7 @@ namespace ove {
         SimpleRenderSystem(const SimpleRenderSystem &) = delete;
         SimpleRenderSystem &operator=(const SimpleRenderSystem &) = delete;
 
-        void renderGameObjects(VkCommandBuffer commandBuffer, std::vector<OveGameObject> &gameObjects);
+        void renderGameObjects(VkCommandBuffer commandBuffer, std::vector<OveGameObject> &gameObjects, const OveCamera &camera);
 
     private:
         void createPipelineLayout();

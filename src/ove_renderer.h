@@ -20,6 +20,7 @@ namespace ove {
         OveRenderer &operator=(const OveRenderer &) = delete;
 
         VkRenderPass getSwapChainRenderPass() const { return oveSwapChain->getRenderPass(); }
+        float getAspectRatio() const { return oveSwapChain->extentAspectRatio(); }
         bool isFrameInProgress() const { return isFrameStarted; }
         VkCommandBuffer getCurrentCommandBuffer() const {
             assert(isFrameStarted && "Cannot get framebuffer when frame not in progress");

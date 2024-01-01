@@ -56,7 +56,7 @@ namespace ove {
         );
     }
 
-    void SimpleRenderSystem::renderGameObjects(VkCommandBuffer commandBuffer, std::vector<OveGameObject> &gameObjects) {
+    void SimpleRenderSystem::renderGameObjects(VkCommandBuffer commandBuffer, std::vector<OveGameObject> &gameObjects, const OveCamera &camera) {
         ovePipeline->bind(commandBuffer);
 
         for(auto& obj : gameObjects) {
@@ -65,7 +65,7 @@ namespace ove {
 
             SimplePushConstantData push{};
             push.color = obj.color;
-            push.transform = obj.transform.evaluate();
+            push.transform = camera.getProjection() * obj.transform.evaluate();
 
             vkCmdPushConstants(
                     commandBuffer,
