@@ -4,6 +4,7 @@
 #include "ove_device.h"
 #include "ove_renderer.h"
 #include "ove_game_object.h"
+#include "keyboard_movement_controller.h"
 
 #include <memory>
 #include <vector>

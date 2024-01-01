@@ -10,6 +10,7 @@
 
 #include <stdexcept>
 #include <array>
+#include <chrono>
 
 namespace ove {
     FirstApp::FirstApp() {
@@ -85,8 +86,21 @@ namespace ove {
         OveCamera camera{};
         camera.setViewDirection(glm::vec3(0.0f), glm::vec3(0.2f, 0.0f, 1.0f));
 
+        KeyboardMovementController controller{};
+        auto viewerObject = OveGameObject::createGameObject();
+
+        auto currentTime = std::chrono::high_resolution_clock::now();
+
         while (!oveWindow.shouldClose()) {
             glfwPollEvents();
+
+            auto newTime = std::chrono::high_resolution_clock::now();
+            float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
+            currentTime = newTime;
+
+            controller.moveInPlaneXZ(oveWindow.getWindowPtr(), frameTime, viewerObject);
+            camera.setViewXyz(viewerObject.transform.translation, viewerObject.transform.rotation);
+
             float aspect = oveRenderer.getAspectRatio();
 //            camera.setOrthographicProjection(-aspect, aspect, -1.0f, 1.0f, -1.0f, 1.0f);
             camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.01f, 10.0f);
