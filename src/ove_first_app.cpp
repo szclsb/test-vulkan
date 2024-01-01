@@ -83,6 +83,7 @@ namespace ove {
     void FirstApp::run() {
         SimpleRenderSystem simpleRenderSystem{oveDevice, oveRenderer.getSwapChainRenderPass()};
         OveCamera camera{};
+        camera.setViewDirection(glm::vec3(0.0f), glm::vec3(0.2f, 0.0f, 1.0f));
 
         while (!oveWindow.shouldClose()) {
             glfwPollEvents();

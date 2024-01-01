@@ -59,13 +59,15 @@ namespace ove {
     void SimpleRenderSystem::renderGameObjects(VkCommandBuffer commandBuffer, std::vector<OveGameObject> &gameObjects, const OveCamera &camera) {
         ovePipeline->bind(commandBuffer);
 
+        auto projection = camera.getProjection() * camera.getTransform();
+
         for(auto& obj : gameObjects) {
             obj.transform.rotation.y = glm::mod(obj.transform.rotation.y + 0.0001f, glm::two_pi<float>());
             obj.transform.rotation.x = glm::mod(obj.transform.rotation.x + 0.00005f, glm::two_pi<float>());
 
             SimplePushConstantData push{};
             push.color = obj.color;
-            push.transform = camera.getProjection() * obj.transform.evaluate();
+            push.transform = projection * obj.transform.evaluate();
 
             vkCmdPushConstants(
                     commandBuffer,
