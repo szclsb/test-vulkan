@@ -1,12 +1,26 @@
 #include "ove_model.h"
 
-#define TINYOBJLOADER_IMPLEMENTATION
+#include "ove_utils.h"
 
+#define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/hash.hpp>
 
 #include <cassert>
 #include <cstring>
 #include <iostream>
+#include <unordered_map>
+
+namespace std {
+    template<> struct hash<ove::OveModel::Vertex> {
+        size_t operator()(ove::OveModel::Vertex const &vertex) const {
+            size_t seed = 0;
+            ove::hashCombine(seed, vertex.position, vertex.normal, vertex.uv, vertex.color);
+            return seed;
+        }
+    };
+}
 
 namespace ove {
     OveModel::OveModel(OveDevice &device, const OveModel::Builder &builder) : oveDevice{device} {
@@ -151,6 +165,7 @@ namespace ove {
         vertices.clear();
         indices.clear();
 
+        std::unordered_map<Vertex, uint32_t> uniqueVertices{};
         for (const auto &shape: shapes) {
             for (const auto &index: shape.mesh.indices) {
                 Vertex vertex{};
@@ -187,7 +202,11 @@ namespace ove {
                     };
                 }
 
-                vertices.push_back(vertex);
+                if (uniqueVertices.count(vertex) == 0) {
+                    uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
+                    vertices.push_back(vertex);
+                }
+                indices.push_back(uniqueVertices[vertex]);
             }
         }
     }
