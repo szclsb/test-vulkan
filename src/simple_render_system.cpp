@@ -12,7 +12,7 @@ namespace ove {
     // https://docs.vulkan.org/guide/latest/shader_memory_layout.html#alignment-requirements
     struct SimplePushConstantData {
         glm::mat4 transform{1.0f};
-        alignas(16) glm::vec3 color;
+        glm::mat4 modelMatrix{1.0f};
     };
 
     SimpleRenderSystem::SimpleRenderSystem(OveDevice &device, VkRenderPass renderPass) : oveDevice{device} {
@@ -63,8 +63,9 @@ namespace ove {
 
         for(auto& obj : gameObjects) {
             SimplePushConstantData push{};
-            push.color = obj.color;
-            push.transform = projection * obj.transform.evaluate();
+            auto modelMatrix = obj.transform.evaluate();
+            push.transform = projection * modelMatrix;
+            push.modelMatrix = modelMatrix;
 
             vkCmdPushConstants(
                     commandBuffer,

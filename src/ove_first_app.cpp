@@ -21,12 +21,12 @@ namespace ove {
     }
 
     void FirstApp::loadGameObjects() {
-        std::shared_ptr<OveModel> model = OveModel::createModelFromFile(oveDevice, "../models/colored_cube.obj");
+        std::shared_ptr<OveModel> model = OveModel::createModelFromFile(oveDevice, "../models/smooth_vase.obj");
         auto cube = OveGameObject::createGameObject();
         cube.model = model;
 //        cube.color = {0.1f, 0.8f, 0.1f};
         cube.transform.translation = {0.0f, 0.0f, 2.5f};
-        cube.transform.scale = {0.5f, 0.5f, 0.5f};
+        cube.transform.scale = 0.5f;
 
         gameObjects.push_back(std::move(cube));
     }
