@@ -1,10 +1,12 @@
 #include "ove_model.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION
+
 #include <tiny_obj_loader.h>
 
 #include <cassert>
 #include <cstring>
+#include <iostream>
 
 namespace ove {
     OveModel::OveModel(OveDevice &device, const OveModel::Builder &builder) : oveDevice{device} {
@@ -20,6 +22,15 @@ namespace ove {
             vkDestroyBuffer(oveDevice.device(), indexBuffer, nullptr);
             vkFreeMemory(oveDevice.device(), indexBufferMemory, nullptr);
         }
+    }
+
+    std::unique_ptr<OveModel> OveModel::createModelFromFile(OveDevice &device, const std::string &fileName) {
+        Builder builder{};
+        std::cout << "Loading model: " << fileName << "\n";
+        builder.loadModel(fileName);
+        std::cout << "Done, vertex count = " << builder.vertices.size() << ", index count = " << builder.indices.size()
+                  << "\n";
+        return std::make_unique<OveModel>(device, builder);
     }
 
     void OveModel::createVertexBuffers(const std::vector<Vertex> &vertices) {
@@ -127,6 +138,58 @@ namespace ove {
         return attributeDescriptions;
     }
 
+    void OveModel::Builder::loadModel(const std::string &fileName) {
+        tinyobj::attrib_t attrib;
+        std::vector<tinyobj::shape_t> shapes;
+        std::vector<tinyobj::material_t> materials;
+        std::string warn, err;
 
+        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, fileName.c_str())) {
+            throw std::runtime_error(warn + err);
+        }
+
+        vertices.clear();
+        indices.clear();
+
+        for (const auto &shape: shapes) {
+            for (const auto &index: shape.mesh.indices) {
+                Vertex vertex{};
+
+                if (index.vertex_index >= 0) {
+                    vertex.position = {
+                            attrib.vertices[3 * index.vertex_index + 0],
+                            attrib.vertices[3 * index.vertex_index + 1],
+                            attrib.vertices[3 * index.vertex_index + 2],
+                    };
+                    auto colorIndex = 3 * index.vertex_index + 2;
+                    if (colorIndex < attrib.colors.size()) {
+                        vertex.color = {
+                                attrib.colors[colorIndex - 2],
+                                attrib.colors[colorIndex - 1],
+                                attrib.colors[colorIndex - 0],
+                        };
+                    } else {
+                        //FIXME
+                        vertex.color = {1.0f, 1.0f, 1.0f};
+                    }
+                }
+                if (index.normal_index >= 0) {
+                    vertex.normal = {
+                            attrib.normals[3 * index.normal_index + 0],
+                            attrib.normals[3 * index.normal_index + 1],
+                            attrib.normals[3 * index.normal_index + 2],
+                    };
+                }
+                if (index.texcoord_index >= 0) {
+                    vertex.uv = {
+                            attrib.texcoords[2 * index.texcoord_index + 0],
+                            attrib.texcoords[2 * index.texcoord_index + 1],
+                    };
+                }
+
+                vertices.push_back(vertex);
+            }
+        }
+    }
 }
 
