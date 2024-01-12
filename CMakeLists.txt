@@ -11,6 +11,7 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
 add_subdirectory(external/GLFW)
 add_subdirectory(external/GLM)
+add_subdirectory(external/tinyobjloader)
 
 find_package(Vulkan REQUIRED)
 if (NOT Vulkan_FOUND)
@@ -25,6 +26,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
         ${Vulkan_INCLUDE_DIRS}
         external/GLFW/include
         external/GLM
+        external/tinyobjloader
 )
 target_link_directories(${PROJECT_NAME} PUBLIC
         external/GLFW/src
