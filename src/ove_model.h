@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ove_device.h"
+#include "ove_buffer.h"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -51,13 +52,11 @@ namespace ove {
 
         OveDevice &oveDevice;
 
-        VkBuffer vertexBuffer;
-        VkDeviceMemory vertexBufferMemory;
+        std::unique_ptr<OveBuffer> vertexBuffer;
         uint32_t vertexCount;
 
         bool hasIndexBuffer = false;
-        VkBuffer indexBuffer;
-        VkDeviceMemory indexBufferMemory;
+        std::unique_ptr<OveBuffer> indexBuffer;
         uint32_t indexCount;
     };
 }

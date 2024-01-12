@@ -56,10 +56,10 @@ namespace ove {
         );
     }
 
-    void SimpleRenderSystem::renderGameObjects(VkCommandBuffer commandBuffer, std::vector<OveGameObject> &gameObjects, const OveCamera &camera) {
-        ovePipeline->bind(commandBuffer);
+    void SimpleRenderSystem::renderGameObjects(FrameInfo &frameInfo, std::vector<OveGameObject> &gameObjects) {
+        ovePipeline->bind(frameInfo.commandBuffer);
 
-        auto projection = camera.getProjection() * camera.getTransform();
+        auto projection = frameInfo.camera.getProjection() * frameInfo.camera.getTransform();
 
         for(auto& obj : gameObjects) {
             SimplePushConstantData push{};
@@ -68,13 +68,13 @@ namespace ove {
             push.modelMatrix = modelMatrix;
 
             vkCmdPushConstants(
-                    commandBuffer,
+                    frameInfo.commandBuffer,
                     pipelineLayout,
                     VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                     0, sizeof(SimplePushConstantData),
                     &push);
-            obj.model->bind(commandBuffer);
-            obj.model->draw(commandBuffer);
+            obj.model->bind(frameInfo.commandBuffer);
+            obj.model->draw(frameInfo.commandBuffer);
         }
     }
 }
