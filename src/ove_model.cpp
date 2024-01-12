@@ -23,17 +23,31 @@ namespace ove {
         vertexCount = static_cast<uint32_t>(vertices.size());
         assert(vertexCount >= 3 && "Vertex count must be at least 3");
         VkDeviceSize bufferSize = sizeof(vertices[0]) * vertexCount;
+
+        VkBuffer stagingBuffer;
+        VkDeviceMemory stagingBufferMemory;
         oveDevice.createBuffer(
                 bufferSize,
-                VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                stagingBuffer,
+                stagingBufferMemory);
+
+        void *data;
+        vkMapMemory(oveDevice.device(), stagingBufferMemory, 0, bufferSize, 0, &data);
+        memcpy(data, vertices.data(), static_cast<size_t>(bufferSize));
+        vkUnmapMemory(oveDevice.device(), stagingBufferMemory);
+
+        oveDevice.createBuffer(
+                bufferSize,
+                VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                 vertexBuffer,
                 vertexBufferMemory);
 
-        void *data;
-        vkMapMemory(oveDevice.device(), vertexBufferMemory, 0, bufferSize, 0, &data);
-        memcpy(data, vertices.data(), static_cast<size_t>(bufferSize));
-        vkUnmapMemory(oveDevice.device(), vertexBufferMemory);
+        oveDevice.copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
+        vkDestroyBuffer(oveDevice.device(), stagingBuffer, nullptr);
+        vkFreeMemory(oveDevice.device(), stagingBufferMemory, nullptr);
     }
 
     void OveModel::createIndexBuffers(const std::vector<uint32_t> &indices) {
@@ -44,17 +58,30 @@ namespace ove {
         }
 
         VkDeviceSize bufferSize = sizeof(indices[0]) * indexCount;
+        VkBuffer stagingBuffer;
+        VkDeviceMemory stagingBufferMemory;
         oveDevice.createBuffer(
                 bufferSize,
-                VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+                VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                stagingBuffer,
+                stagingBufferMemory);
+
+        void *data;
+        vkMapMemory(oveDevice.device(), stagingBufferMemory, 0, bufferSize, 0, &data);
+        memcpy(data, indices.data(), static_cast<size_t>(bufferSize));
+        vkUnmapMemory(oveDevice.device(), stagingBufferMemory);
+
+        oveDevice.createBuffer(
+                bufferSize,
+                VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                 indexBuffer,
                 indexBufferMemory);
 
-        void *data;
-        vkMapMemory(oveDevice.device(), indexBufferMemory, 0, bufferSize, 0, &data);
-        memcpy(data, indices.data(), static_cast<size_t>(bufferSize));
-        vkUnmapMemory(oveDevice.device(), indexBufferMemory);
+        oveDevice.copyBuffer(stagingBuffer, indexBuffer, bufferSize);
+        vkDestroyBuffer(oveDevice.device(), stagingBuffer, nullptr);
+        vkFreeMemory(oveDevice.device(), stagingBufferMemory, nullptr);
     }
 
     void OveModel::bind(VkCommandBuffer commandBuffer) {
