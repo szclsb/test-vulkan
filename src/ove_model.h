@@ -19,7 +19,12 @@ namespace ove {
             static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions();
         };
 
-        OveModel(OveDevice &device, const std::vector<Vertex> &vertices);
+        struct Builder {
+            std::vector<Vertex> vertices{};
+            std::vector<uint32_t> indices {};
+        };
+
+        OveModel(OveDevice &device, const OveModel::Builder &builder);
         ~OveModel();
 
         OveModel(const OveModel &) = delete;
@@ -30,10 +35,17 @@ namespace ove {
 
     private:
         void createVertexBuffers(const std::vector<Vertex> &vertices);
+        void createIndexBuffers(const std::vector<uint32_t> &indices);
 
         OveDevice &oveDevice;
+
         VkBuffer vertexBuffer;
         VkDeviceMemory vertexBufferMemory;
         uint32_t vertexCount;
+
+        bool hasIndexBuffer = false;
+        VkBuffer indexBuffer;
+        VkDeviceMemory indexBufferMemory;
+        uint32_t indexCount;
     };
 }

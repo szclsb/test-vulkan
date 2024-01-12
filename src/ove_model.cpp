@@ -4,13 +4,19 @@
 #include <cstring>
 
 namespace ove {
-    OveModel::OveModel(OveDevice &device, const std::vector<Vertex> &vertices) : oveDevice{device} {
-        createVertexBuffers(vertices);
+    OveModel::OveModel(OveDevice &device, const OveModel::Builder &builder) : oveDevice{device} {
+        createVertexBuffers(builder.vertices);
+        createIndexBuffers(builder.indices);
     }
 
     OveModel::~OveModel() {
         vkDestroyBuffer(oveDevice.device(), vertexBuffer, nullptr);
         vkFreeMemory(oveDevice.device(), vertexBufferMemory, nullptr);
+
+        if (hasIndexBuffer) {
+            vkDestroyBuffer(oveDevice.device(), indexBuffer, nullptr);
+            vkFreeMemory(oveDevice.device(), indexBufferMemory, nullptr);
+        }
     }
 
     void OveModel::createVertexBuffers(const std::vector<Vertex> &vertices) {
@@ -24,20 +30,49 @@ namespace ove {
                 vertexBuffer,
                 vertexBufferMemory);
 
-        void  *data;
+        void *data;
         vkMapMemory(oveDevice.device(), vertexBufferMemory, 0, bufferSize, 0, &data);
         memcpy(data, vertices.data(), static_cast<size_t>(bufferSize));
         vkUnmapMemory(oveDevice.device(), vertexBufferMemory);
+    }
+
+    void OveModel::createIndexBuffers(const std::vector<uint32_t> &indices) {
+        indexCount = static_cast<uint32_t>(indices.size());
+        hasIndexBuffer = indexCount > 0;
+        if (!hasIndexBuffer) {
+            return;
+        }
+
+        VkDeviceSize bufferSize = sizeof(indices[0]) * indexCount;
+        oveDevice.createBuffer(
+                bufferSize,
+                VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                indexBuffer,
+                indexBufferMemory);
+
+        void *data;
+        vkMapMemory(oveDevice.device(), indexBufferMemory, 0, bufferSize, 0, &data);
+        memcpy(data, indices.data(), static_cast<size_t>(bufferSize));
+        vkUnmapMemory(oveDevice.device(), indexBufferMemory);
     }
 
     void OveModel::bind(VkCommandBuffer commandBuffer) {
         VkBuffer buffers[] = {vertexBuffer};
         VkDeviceSize offsets[] = {0};
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offsets);
+
+        if (hasIndexBuffer) {
+            vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+        }
     }
 
     void OveModel::draw(VkCommandBuffer commandBuffer) {
-        vkCmdDraw(commandBuffer, vertexCount, 1, 0, 0);
+        if (hasIndexBuffer) {
+            vkCmdDrawIndexed(commandBuffer, indexCount, 1, 0, 0, 0);
+        } else {
+            vkCmdDraw(commandBuffer, vertexCount, 1, 0, 0);
+        }
     }
 
     std::vector<VkVertexInputBindingDescription> OveModel::Vertex::getBindingDescriptions() {
