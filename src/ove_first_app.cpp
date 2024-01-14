@@ -16,7 +16,10 @@
 namespace ove {
     struct GlobalUbo {
         glm::mat4 projectionView{1.f};
-        glm::vec3 lightDirection = glm::normalize(glm::vec3{1.0f, -3.0f, -1.0f});
+//        glm::vec3 lightDirection = glm::normalize(glm::vec3{1.0f, -3.0f, -1.0f});
+        alignas(16) glm::vec3 ambientLight{0.2f};
+        alignas(16) glm::vec3 lightPosition{0.0f};
+        alignas(16) glm::vec3 lightColor{1.f};
     };
 
     FirstApp::FirstApp() {
@@ -31,14 +34,27 @@ namespace ove {
     }
 
     void FirstApp::loadGameObjects() {
-        std::shared_ptr<OveModel> model = OveModel::createModelFromFile(oveDevice, "../models/smooth_vase.obj");
-        auto cube = OveGameObject::createGameObject();
-        cube.model = model;
-//        cube.color = {0.1f, 0.8f, 0.1f};
-        cube.transform.translation = {0.0f, 0.0f, 2.5f};
-        cube.transform.scale = 0.5f;
+        std::shared_ptr<OveModel> flatVase = OveModel::createModelFromFile(oveDevice, "../models/flat_vase.obj");
+        std::shared_ptr<OveModel> smoothVase = OveModel::createModelFromFile(oveDevice, "../models/smooth_vase.obj");
+        std::shared_ptr<OveModel> floor = OveModel::createModelFromFile(oveDevice, "../models/square.obj");
 
-        gameObjects.push_back(std::move(cube));
+        auto obj1 = OveGameObject::createGameObject();
+        obj1.model = flatVase;
+        obj1.transform.translation = {-0.5f, 0.5f, 0};
+        obj1.transform.scale = 2.0f;
+        gameObjects.push_back(std::move(obj1));
+
+        auto obj2 = OveGameObject::createGameObject();
+        obj2.model = smoothVase;
+        obj2.transform.translation = {0.5f, 0.5f, 0.0f};
+        obj2.transform.scale = 2.0f;
+        gameObjects.push_back(std::move(obj2));
+
+        auto obj3 = OveGameObject::createGameObject();
+        obj3.model = floor;
+        obj3.transform.translation = {0.0f, 0.5f, 0.0f};
+        obj3.transform.scale = 5.0f;
+        gameObjects.push_back(std::move(obj3));
     }
 
     void FirstApp::run() {
@@ -54,7 +70,7 @@ namespace ove {
         }
 
         auto globalSetLayout = OveDescriptorSetLayout::Builder(oveDevice)
-                .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+                .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
                 .build();
         std::vector<VkDescriptorSet> globalDescriptorSets(OveSwapChain::MAX_FRAMES_IN_FLIGHT);
         for (auto i = 0; i < globalDescriptorSets.size(); i++) {
@@ -68,10 +84,10 @@ namespace ove {
                                               oveRenderer.getSwapChainRenderPass(),
                                               globalSetLayout->getDescriptorSetLayout()};
         OveCamera camera{};
-        camera.setViewDirection(glm::vec3(0.0f), glm::vec3(0.2f, 0.0f, 1.0f));
-
-        KeyboardMovementController controller{};
         auto viewerObject = OveGameObject::createGameObject();
+        viewerObject.transform.translation.z = -2.5f;
+        KeyboardMovementController controller{};
+//        camera.setViewDirection(glm::vec3(0.0f), glm::vec3(0.2f, 0.0f, 1.0f));
 
         auto currentTime = std::chrono::high_resolution_clock::now();
 
@@ -87,7 +103,7 @@ namespace ove {
 
             float aspect = oveRenderer.getAspectRatio();
 //            camera.setOrthographicProjection(-aspect, aspect, -1.0f, 1.0f, -1.0f, 1.0f);
-            camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.01f, 10.0f);
+            camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.01f, 100.0f);
 
             if (auto commandBuffer = oveRenderer.beginFrame()) {
                 int frameIndex = oveRenderer.getFrameIndex();
@@ -102,6 +118,7 @@ namespace ove {
                 // update
                 GlobalUbo ubo{};
                 ubo.projectionView = camera.getProjection() * camera.getTransform();
+                ubo.lightPosition = {-1.0f, -1.0f, -1.0f};
                 uboBuffers[frameIndex]->writeToBuffer(&ubo);
                 uboBuffers[frameIndex]->flush();
 
