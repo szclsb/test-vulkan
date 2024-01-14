@@ -9,6 +9,7 @@ namespace ove {
         int frameIndex;
         float frameTime;
         VkCommandBuffer commandBuffer;
+        VkDescriptorSet globalDescriptorSet;
         OveCamera camera;
     };
 }

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "ove_window.h"
+#include "ove_descriptors.h"
 #include "ove_device.h"
-#include "ove_renderer.h"
 #include "ove_game_object.h"
-#include "keyboard_movement_controller.h"
+#include "ove_renderer.h"
+#include "ove_window.h"
 
 #include <memory>
 #include <vector>
@@ -30,6 +30,8 @@ namespace ove {
         OveDevice oveDevice{oveWindow};
         OveRenderer oveRenderer{oveWindow, oveDevice};
 
+        // note: order of declaration matters
+        std::unique_ptr<OveDescriptorPool> globalPool;
         std::vector<OveGameObject> gameObjects;
     };
 }

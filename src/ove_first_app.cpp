@@ -1,6 +1,7 @@
 #include "ove_first_app.h"
 
 #include "simple_render_system.h"
+#include "keyboard_movement_controller.h"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -19,6 +20,10 @@ namespace ove {
     };
 
     FirstApp::FirstApp() {
+        globalPool = OveDescriptorPool::Builder(oveDevice)
+                .setMaxSets(OveSwapChain::MAX_FRAMES_IN_FLIGHT)
+                .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, OveSwapChain::MAX_FRAMES_IN_FLIGHT)
+                .build();
         loadGameObjects();
     }
 
@@ -48,7 +53,20 @@ namespace ove {
             uboBuffers[i]->map();
         }
 
-        SimpleRenderSystem simpleRenderSystem{oveDevice, oveRenderer.getSwapChainRenderPass()};
+        auto globalSetLayout = OveDescriptorSetLayout::Builder(oveDevice)
+                .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+                .build();
+        std::vector<VkDescriptorSet> globalDescriptorSets(OveSwapChain::MAX_FRAMES_IN_FLIGHT);
+        for (auto i = 0; i < globalDescriptorSets.size(); i++) {
+            auto bufferInfo = uboBuffers[i]->descriptorInfo();
+            OveDescriptorWriter(*globalSetLayout, *globalPool)
+            .writeBuffer(0, &bufferInfo)
+            .build(globalDescriptorSets[i]);
+        }
+
+        SimpleRenderSystem simpleRenderSystem{oveDevice,
+                                              oveRenderer.getSwapChainRenderPass(),
+                                              globalSetLayout->getDescriptorSetLayout()};
         OveCamera camera{};
         camera.setViewDirection(glm::vec3(0.0f), glm::vec3(0.2f, 0.0f, 1.0f));
 
@@ -77,6 +95,7 @@ namespace ove {
                         frameIndex,
                         frameTime,
                         commandBuffer,
+                        globalDescriptorSets[frameIndex],
                         camera
                 };
 

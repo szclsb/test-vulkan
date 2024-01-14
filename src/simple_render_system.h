@@ -12,7 +12,7 @@
 namespace ove {
     class SimpleRenderSystem {
     public:
-        SimpleRenderSystem(OveDevice &device, VkRenderPass renderPass);
+        SimpleRenderSystem(OveDevice &device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
         ~SimpleRenderSystem();
 
         SimpleRenderSystem(const SimpleRenderSystem &) = delete;
@@ -21,7 +21,7 @@ namespace ove {
         void renderGameObjects(FrameInfo &frameInfo, std::vector<OveGameObject> &gameObjects);
 
     private:
-        void createPipelineLayout();
+        void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
         void createPipeline(VkRenderPass renderPass);
 
         OveDevice &oveDevice;
