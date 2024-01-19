@@ -55,16 +55,15 @@ namespace ove {
         }
 
         OveGameObject(const OveGameObject &) = delete;
-
         OveGameObject &operator=(const OveGameObject &) = delete;
-
         OveGameObject(OveGameObject &&) = default;
-
         OveGameObject &operator=(OveGameObject &&) = default;
 
-        std::shared_ptr<OveModel> model{};
-        glm::vec3 color{};
+        id_t getId() { return id; }
+        glm::vec4 color{1.0f};
         TransformComponent transform{};
+
+        std::shared_ptr<OveModel> model{};
 
     private:
         OveGameObject(id_t objId) : id{objId} {}

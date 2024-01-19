@@ -18,13 +18,12 @@ namespace ove {
             glm::vec3 position;
             glm::vec3 normal;
             glm::vec2 uv;
-            glm::vec3 color;
 
             static std::vector<VkVertexInputBindingDescription> getBindingDescriptions();
             static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions();
 
             bool operator==(const Vertex &other) const {
-                return position == other.position && normal == other.normal && uv == other.uv && color == other.color;
+                return position == other.position && normal == other.normal && uv == other.uv;
             }
         };
 

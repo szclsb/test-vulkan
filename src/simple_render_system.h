@@ -18,7 +18,8 @@ namespace ove {
         SimpleRenderSystem(const SimpleRenderSystem &) = delete;
         SimpleRenderSystem &operator=(const SimpleRenderSystem &) = delete;
 
-        void renderGameObjects(FrameInfo &frameInfo, std::vector<OveGameObject> &gameObjects);
+        void update(FrameInfo &frameInfo, std::vector<OveGameObject> &gameObjects, GlobalUbo &ubo);
+        void render(FrameInfo &frameInfo, std::vector<OveGameObject> &gameObjects, std::vector<OveGameObject> &lights);
 
     private:
         void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);

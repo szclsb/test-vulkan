@@ -25,6 +25,7 @@ namespace ove {
 
     private:
         void loadGameObjects();
+        void loadLights();
 
         OveWindow oveWindow{WIDTH, HEIGHT, "Hello Vulkan"};
         OveDevice oveDevice{oveWindow};
@@ -32,6 +33,8 @@ namespace ove {
 
         // note: order of declaration matters
         std::unique_ptr<OveDescriptorPool> globalPool;
+
         std::vector<OveGameObject> gameObjects;
+        std::vector<OveGameObject> lights;
     };
 }

@@ -14,20 +14,13 @@
 #include <chrono>
 
 namespace ove {
-    struct GlobalUbo {
-        glm::mat4 projectionView{1.f};
-//        glm::vec3 lightDirection = glm::normalize(glm::vec3{1.0f, -3.0f, -1.0f});
-        alignas(16) glm::vec3 ambientLight{0.2f};
-        alignas(16) glm::vec3 lightPosition{0.0f};
-        alignas(16) glm::vec3 lightColor{1.f};
-    };
-
     FirstApp::FirstApp() {
         globalPool = OveDescriptorPool::Builder(oveDevice)
                 .setMaxSets(OveSwapChain::MAX_FRAMES_IN_FLIGHT)
                 .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, OveSwapChain::MAX_FRAMES_IN_FLIGHT)
                 .build();
         loadGameObjects();
+        loadLights();
     }
 
     FirstApp::~FirstApp() {
@@ -55,6 +48,30 @@ namespace ove {
         obj3.transform.translation = {0.0f, 0.5f, 0.0f};
         obj3.transform.scale = 5.0f;
         gameObjects.push_back(std::move(obj3));
+    }
+
+    void FirstApp::loadLights() {
+        std::shared_ptr<OveModel> sphere = OveModel::createModelFromFile(oveDevice, "../models/sphere.obj");
+        std::vector<glm::vec3> lightColors{
+                {1.f, .1f, .1f},
+                {.1f, .1f, 1.f},
+                {.1f, 1.f, .1f},
+                {1.f, 1.f, .1f},
+                {.1f, 1.f, 1.f},
+                {1.f, 1.f, 1.f}  //
+        };
+        for (int i = 0; i < lightColors.size(); i++) {
+            auto pointLight = OveGameObject::createGameObject();
+            pointLight.color = glm::vec4(lightColors[i], 1.0f);
+            pointLight.model = sphere;
+            pointLight.transform.scale = 0.1f;
+            auto rotateLight = glm::rotate(
+                    glm::mat4(1.f),
+                    (i * glm::two_pi<float>()) / lightColors.size(),
+                    {0.f, -1.f, 0.f});
+            pointLight.transform.translation = glm::vec3(rotateLight * glm::vec4(-1.f, -1.f, -1.f, 1.f));
+            lights.push_back(std::move(pointLight));
+        }
     }
 
     void FirstApp::run() {
@@ -118,13 +135,17 @@ namespace ove {
                 // update
                 GlobalUbo ubo{};
                 ubo.projectionView = camera.getProjection() * camera.getTransform();
-                ubo.lightPosition = {-1.0f, -1.0f, -1.0f};
+                ubo.numLights = static_cast<int>(lights.size());
+                for (auto i = 0; i < lights.size(); i++) {
+                    ubo.pointLights[i].position = glm::vec4( lights[i].transform.translation, 1);
+                    ubo.pointLights[i].color = lights[i].color;
+                }
                 uboBuffers[frameIndex]->writeToBuffer(&ubo);
                 uboBuffers[frameIndex]->flush();
 
                 // render
                 oveRenderer.beginSwapChainRenderPass(commandBuffer);
-                simpleRenderSystem.renderGameObjects(frameInfo, gameObjects);
+                simpleRenderSystem.render(frameInfo, gameObjects, lights);
                 oveRenderer.endSwapChainRenderPass(commandBuffer);
                 oveRenderer.endFrame();
             }

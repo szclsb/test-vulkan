@@ -12,6 +12,8 @@ namespace ove {
     // https://docs.vulkan.org/guide/latest/shader_memory_layout.html#alignment-requirements
     struct SimplePushConstantData {
         glm::mat4 modelMatrix{1.0f};
+        glm::vec4 color;
+        int isLight{0};
     };
 
     SimpleRenderSystem::SimpleRenderSystem(OveDevice &device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout) : oveDevice{device} {
@@ -57,7 +59,7 @@ namespace ove {
         );
     }
 
-    void SimpleRenderSystem::renderGameObjects(FrameInfo &frameInfo, std::vector<OveGameObject> &gameObjects) {
+    void SimpleRenderSystem::render(FrameInfo &frameInfo, std::vector<OveGameObject> &gameObjects, std::vector<OveGameObject> &lights) {
         ovePipeline->bind(frameInfo.commandBuffer);
 
         vkCmdBindDescriptorSets(frameInfo.commandBuffer,
@@ -69,6 +71,8 @@ namespace ove {
         for(auto& obj : gameObjects) {
             SimplePushConstantData push{};
             push.modelMatrix = obj.transform.evaluate();
+            push.color = obj.color;
+            push.isLight = 0;
 
             vkCmdPushConstants(
                     frameInfo.commandBuffer,
@@ -78,6 +82,22 @@ namespace ove {
                     &push);
             obj.model->bind(frameInfo.commandBuffer);
             obj.model->draw(frameInfo.commandBuffer);
+        }
+
+        for(auto& light : lights) {
+            SimplePushConstantData push{};
+            push.modelMatrix = light.transform.evaluate();
+            push.color = light.color;
+            push.isLight = 1;
+
+            vkCmdPushConstants(
+                    frameInfo.commandBuffer,
+                    pipelineLayout,
+                    VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                    0, sizeof(SimplePushConstantData),
+                    &push);
+            light.model->bind(frameInfo.commandBuffer);
+            light.model->draw(frameInfo.commandBuffer);
         }
     }
 }

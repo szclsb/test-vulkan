@@ -16,7 +16,7 @@ namespace std {
     template<> struct hash<ove::OveModel::Vertex> {
         size_t operator()(ove::OveModel::Vertex const &vertex) const {
             size_t seed = 0;
-            ove::hashCombine(seed, vertex.position, vertex.normal, vertex.uv, vertex.color);
+            ove::hashCombine(seed, vertex.position, vertex.normal, vertex.uv);
             return seed;
         }
     };
@@ -129,7 +129,6 @@ namespace ove {
         attributeDescriptions.push_back({0, 0, VK_FORMAT_R32G32B32_SFLOAT, static_cast<uint32_t>(offsetof(Vertex, position))});
         attributeDescriptions.push_back({1, 0, VK_FORMAT_R32G32B32_SFLOAT, static_cast<uint32_t>(offsetof(Vertex, normal))});
         attributeDescriptions.push_back({2, 0, VK_FORMAT_R32G32_SFLOAT, static_cast<uint32_t>(offsetof(Vertex, uv))});
-        attributeDescriptions.push_back({3, 0, VK_FORMAT_R32G32B32_SFLOAT, static_cast<uint32_t>(offsetof(Vertex, color))});
 
         return attributeDescriptions;
     }
@@ -157,11 +156,6 @@ namespace ove {
                             attrib.vertices[3 * index.vertex_index + 0],
                             attrib.vertices[3 * index.vertex_index + 1],
                             attrib.vertices[3 * index.vertex_index + 2],
-                    };
-                    vertex.color = {
-                            attrib.colors[3 * index.vertex_index + 0],
-                            attrib.colors[3 * index.vertex_index + 1],
-                            attrib.colors[3 * index.vertex_index + 2],
                     };
                 }
                 if (index.normal_index >= 0) {
