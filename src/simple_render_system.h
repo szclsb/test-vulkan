@@ -5,6 +5,7 @@
 #include "ove_frame_info.h"
 #include "ove_game_object.h"
 #include "ove_pipeline.h"
+#include "ove_scene.h"
 
 #include <memory>
 #include <vector>
@@ -18,8 +19,8 @@ namespace ove {
         SimpleRenderSystem(const SimpleRenderSystem &) = delete;
         SimpleRenderSystem &operator=(const SimpleRenderSystem &) = delete;
 
-        void update(FrameInfo &frameInfo, std::vector<OveGameObject> &gameObjects, GlobalUbo &ubo);
-        void render(FrameInfo &frameInfo, std::vector<OveGameObject> &gameObjects, std::vector<OveGameObject> &lights);
+        void update(FrameInfo &frameInfo, GlobalUbo &ubo);
+        void render(FrameInfo &frameInfo);
 
     private:
         void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);

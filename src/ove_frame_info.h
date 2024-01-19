@@ -1,12 +1,13 @@
 #pragma once
 
-#include "ove_camera.h"
+#include "ove_scene.h"
 
 #include <vulkan/vulkan.h>
 
 namespace ove {
     #define MAX_LIGHTS 10
 
+    // https://docs.vulkan.org/guide/latest/shader_memory_layout.html#alignment-requirements
     struct PointLight {
         glm::vec3 position;
         alignas(16) glm::vec3 color;
@@ -25,6 +26,6 @@ namespace ove {
         float frameTime;
         VkCommandBuffer commandBuffer;
         VkDescriptorSet globalDescriptorSet;
-        OveCamera camera;
+        std::shared_ptr<Scene> scene;
     };
 }

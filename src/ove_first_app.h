@@ -5,6 +5,7 @@
 #include "ove_game_object.h"
 #include "ove_renderer.h"
 #include "ove_window.h"
+#include "ove_scene.h"
 
 #include <memory>
 #include <vector>
@@ -33,8 +34,6 @@ namespace ove {
 
         // note: order of declaration matters
         std::unique_ptr<OveDescriptorPool> globalPool;
-
-        std::vector<OveGameObject> gameObjects;
-        std::vector<OveGameObject> lights;
+        std::shared_ptr<Scene> scene;
     };
 }

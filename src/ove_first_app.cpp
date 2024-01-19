@@ -19,6 +19,7 @@ namespace ove {
                 .setMaxSets(OveSwapChain::MAX_FRAMES_IN_FLIGHT)
                 .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, OveSwapChain::MAX_FRAMES_IN_FLIGHT)
                 .build();
+        scene = std::make_shared<Scene>();
         loadGameObjects();
         loadLights();
     }
@@ -35,19 +36,19 @@ namespace ove {
         obj1.model = flatVase;
         obj1.transform.translation = {-0.5f, 0.5f, 0};
         obj1.transform.scale = 2.0f;
-        gameObjects.push_back(std::move(obj1));
+        scene->gameObjects.push_back(std::move(obj1));
 
         auto obj2 = OveGameObject::createGameObject();
         obj2.model = smoothVase;
         obj2.transform.translation = {0.5f, 0.5f, 0.0f};
         obj2.transform.scale = 2.0f;
-        gameObjects.push_back(std::move(obj2));
+        scene->gameObjects.push_back(std::move(obj2));
 
         auto obj3 = OveGameObject::createGameObject();
         obj3.model = floor;
         obj3.transform.translation = {0.0f, 0.5f, 0.0f};
         obj3.transform.scale = 5.0f;
-        gameObjects.push_back(std::move(obj3));
+        scene->gameObjects.push_back(std::move(obj3));
     }
 
     void FirstApp::loadLights() {
@@ -70,7 +71,7 @@ namespace ove {
                     (i * glm::two_pi<float>()) / lightColors.size(),
                     {0.f, -1.f, 0.f});
             pointLight.transform.translation = glm::vec3(rotateLight * glm::vec4(-1.f, -1.f, -1.f, 1.f));
-            lights.push_back(std::move(pointLight));
+            scene->lights.push_back(std::move(pointLight));
         }
     }
 
@@ -100,7 +101,7 @@ namespace ove {
         SimpleRenderSystem simpleRenderSystem{oveDevice,
                                               oveRenderer.getSwapChainRenderPass(),
                                               globalSetLayout->getDescriptorSetLayout()};
-        OveCamera camera{};
+        scene->camera = OveCamera{};
         auto viewerObject = OveGameObject::createGameObject();
         viewerObject.transform.translation.z = -2.5f;
         KeyboardMovementController controller{};
@@ -116,11 +117,11 @@ namespace ove {
             currentTime = newTime;
 
             controller.moveInPlaneXZ(oveWindow.getWindowPtr(), frameTime, viewerObject);
-            camera.setViewXyz(viewerObject.transform.translation, viewerObject.transform.rotation);
+            scene->camera.setViewXyz(viewerObject.transform.translation, viewerObject.transform.rotation);
 
             float aspect = oveRenderer.getAspectRatio();
-//            camera.setOrthographicProjection(-aspect, aspect, -1.0f, 1.0f, -1.0f, 1.0f);
-            camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.01f, 100.0f);
+//            scene->camera.setOrthographicProjection(-aspect, aspect, -1.0f, 1.0f, -1.0f, 1.0f);
+            scene->camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.01f, 100.0f);
 
             if (auto commandBuffer = oveRenderer.beginFrame()) {
                 int frameIndex = oveRenderer.getFrameIndex();
@@ -129,23 +130,18 @@ namespace ove {
                         frameTime,
                         commandBuffer,
                         globalDescriptorSets[frameIndex],
-                        camera
+                        scene
                 };
 
                 // update
                 GlobalUbo ubo{};
-                ubo.projectionView = camera.getProjection() * camera.getTransform();
-                ubo.numLights = static_cast<int>(lights.size());
-                for (auto i = 0; i < lights.size(); i++) {
-                    ubo.pointLights[i].position = lights[i].transform.translation;
-                    ubo.pointLights[i].color = lights[i].color;
-                }
+                simpleRenderSystem.update(frameInfo, ubo);
                 uboBuffers[frameIndex]->writeToBuffer(&ubo);
                 uboBuffers[frameIndex]->flush();
 
                 // render
                 oveRenderer.beginSwapChainRenderPass(commandBuffer);
-                simpleRenderSystem.render(frameInfo, gameObjects, lights);
+                simpleRenderSystem.render(frameInfo);
                 oveRenderer.endSwapChainRenderPass(commandBuffer);
                 oveRenderer.endFrame();
             }

@@ -2,6 +2,7 @@
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
+
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
 
@@ -16,7 +17,8 @@ namespace ove {
         int isLight{0};
     };
 
-    SimpleRenderSystem::SimpleRenderSystem(OveDevice &device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout) : oveDevice{device} {
+    SimpleRenderSystem::SimpleRenderSystem(OveDevice &device, VkRenderPass renderPass,
+                                           VkDescriptorSetLayout globalSetLayout) : oveDevice{device} {
         createPipelineLayout(globalSetLayout);
         createPipeline(renderPass);
     }
@@ -59,7 +61,23 @@ namespace ove {
         );
     }
 
-    void SimpleRenderSystem::render(FrameInfo &frameInfo, std::vector<OveGameObject> &gameObjects, std::vector<OveGameObject> &lights) {
+    void SimpleRenderSystem::update(FrameInfo &frameInfo, GlobalUbo &ubo) {
+        auto camera = frameInfo.scene->camera;
+        ubo.projectionView = camera.getProjection() * camera.getTransform();
+        auto lightSize = frameInfo.scene->lights.size();
+        ubo.numLights = static_cast<int>(lightSize);
+        auto rotate = glm::rotate(glm::mat4(1.0f), frameInfo.frameTime, {0.0f, -1.0f, 0.0f});
+        for (auto i = 0; i < lightSize; i++) {
+            assert(i < MAX_LIGHTS && "lights exceed max number");
+            auto &light = frameInfo.scene->lights[i];
+            light.transform.translation = glm::vec3(rotate * glm::vec4(light.transform.translation, 1.0f));
+
+            ubo.pointLights[i].position = light.transform.translation;
+            ubo.pointLights[i].color = light.color;
+        }
+    }
+
+    void SimpleRenderSystem::render(FrameInfo &frameInfo) {
         ovePipeline->bind(frameInfo.commandBuffer);
 
         vkCmdBindDescriptorSets(frameInfo.commandBuffer,
@@ -68,7 +86,7 @@ namespace ove {
                                 &frameInfo.globalDescriptorSet,
                                 0, nullptr);
 
-        for(auto& obj : gameObjects) {
+        for (auto &obj: frameInfo.scene->gameObjects) {
             SimplePushConstantData push{};
             push.modelMatrix = obj.transform.evaluate();
             push.color = obj.color;
@@ -84,7 +102,7 @@ namespace ove {
             obj.model->draw(frameInfo.commandBuffer);
         }
 
-        for(auto& light : lights) {
+        for (auto &light: frameInfo.scene->lights) {
             SimplePushConstantData push{};
             push.modelMatrix = light.transform.evaluate();
             push.color = light.color;
