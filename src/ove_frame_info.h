@@ -8,15 +8,15 @@ namespace ove {
     #define MAX_LIGHTS 10
 
     struct PointLight {
-        glm::vec4 position;
-        glm::vec4 color;
+        glm::vec3 position;
+        alignas(16) glm::vec3 color;
     };
 
     struct GlobalUbo {
         glm::mat4 projectionView{1.f};
 //        glm::vec3 lightDirection = glm::normalize(glm::vec3{1.0f, -3.0f, -1.0f});
-        glm::vec4 ambientLight{0.2f};
-        int numLights;
+        glm::vec3 ambientLight{0.2f};
+        alignas(16) int numLights;
         alignas(16) PointLight pointLights[MAX_LIGHTS];
     };
 

@@ -137,7 +137,7 @@ namespace ove {
                 ubo.projectionView = camera.getProjection() * camera.getTransform();
                 ubo.numLights = static_cast<int>(lights.size());
                 for (auto i = 0; i < lights.size(); i++) {
-                    ubo.pointLights[i].position = glm::vec4( lights[i].transform.translation, 1);
+                    ubo.pointLights[i].position = lights[i].transform.translation;
                     ubo.pointLights[i].color = lights[i].color;
                 }
                 uboBuffers[frameIndex]->writeToBuffer(&ubo);
